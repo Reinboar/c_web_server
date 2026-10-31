@@ -21,10 +21,6 @@ int destroyHttpReq(HttpRequest* req) {
         free(req->httpVersion);
     if (req->headers.host != NULL)
         free(req->headers.host);
-    if (req->headers.contentType != NULL)
-        free(req->headers.contentType);
-    if (req->headers.contentLength != NULL)
-        free(req->headers.contentLength);
     free(req);
     return 0;
 }

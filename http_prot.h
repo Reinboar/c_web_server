@@ -5,9 +5,6 @@
 
 typedef struct HttpRequestHeaders {
     char* host;
-    char* contentType;
-    char* contentLength;
-
 } HttpRequestHeaders;
 
 typedef struct HttpRequest {
