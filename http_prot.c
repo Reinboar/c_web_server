@@ -141,7 +141,6 @@ int getBody(HttpRequest* req, char** buffer) {
 }
 
 HttpRequest* readHttpReq(char** buffer) {
-    //printf("BUFFER: %s\n", *buffer);
     HttpRequest* req = createHttpReq();
     getMethod(req, buffer);
     printf("Method: %s\n", req->method);
