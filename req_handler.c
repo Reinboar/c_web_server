@@ -26,7 +26,6 @@ int readFileContent(char* filename, char* buffer) {
     free(fullPath);
     while (feof(inFile) == 0) {
         int bytesNum = fread(rdBuffer, 1, 100, inFile);
-        printf("Read Buffer: '%s'\n", rdBuffer);
         strncat(buffer, rdBuffer, bytesNum);
     }
     free(rdBuffer);
@@ -56,7 +55,7 @@ int getFileSize(char* filename) {
 }
 
 int sendResp(int fd, int status, const char* msg, int len, char* body) {
-    const char* respFmt = "HTTP/1.1 %d %s\r\nContent-Type: text/html\r\nContent-Length: %d\r\n\r\n";
+    const char* respFmt = "HTTP/1.1 %d %s\r\nContent-Type: text/html\r\nContent-Length: %d\r\nConnection: close\r\n\r\n";
     char* respHeader = malloc(strlen(respFmt) + len + 1024);
     sprintf(respHeader, respFmt, status, msg, len);
     send(fd, respHeader, strlen(respHeader), 0);
