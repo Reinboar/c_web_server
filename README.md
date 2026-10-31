@@ -8,3 +8,10 @@ This server implements a small subset of the HTTP/1.1 Web protocol, essentially 
 * Support for the Basic Authentication header.
 * Request handler chaining.
 * Built-in document templating for __POST__ requests.
+
+## Building and Usage
+Execute the make script.
+
+`$ ./make.sh`
+
+An executable named `server` will be created which will host any files present in the `web` directory over HTTP in response to __GET__ requests. __POST__ requests will simply send the request body, as is, in the response body. This is placeholder functionality and will be replaced in subsequent updates.
