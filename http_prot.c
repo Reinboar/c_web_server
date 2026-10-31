@@ -153,5 +153,6 @@ HttpRequest* readHttpReq(char** buffer) {
     printf("Host: %s\n", req->headers.host);
     getBody(req, buffer);
     printf("Body: %s\n", req->body);
+    printf("\n");
     return req;
 }
