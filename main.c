@@ -15,7 +15,6 @@
 #define CLIENT_BUFFER_SIZE 1024*1024*2 // 2MB per client buffer
 
 void signalHandler(int signal) {
-    
 }
 
 int createListenSocket() {
@@ -45,23 +44,37 @@ int clientSocketProcess(int clientFd) {
     char* buffer = malloc(CLIENT_BUFFER_SIZE); // input buffer
     int inSize; // size of the received message
 
-    while (1) {
-        bzero(buffer, CLIENT_BUFFER_SIZE);
-        int actualSize = recv(clientFd, buffer, CLIENT_BUFFER_SIZE-1, 0); 
-        if (actualSize >= CLIENT_BUFFER_SIZE) {
-            printf("Request was longer than the permitted size of %dMB.\n", CLIENT_BUFFER_SIZE/(1024*1024));
-            break; // kill current process
-        }
-        HttpRequest* req = readHttpReq(&buffer);
-        processRequest(req, clientFd);
-        destroyHttpReq(req);
+    bzero(buffer, CLIENT_BUFFER_SIZE);
+    int actualSize = recv(clientFd, buffer, CLIENT_BUFFER_SIZE-1, 0); 
+    if (actualSize >= CLIENT_BUFFER_SIZE) {
+        printf("Request was longer than the permitted size of %dMB.\n", CLIENT_BUFFER_SIZE/(1024*1024));
+        return 0; // kill current process
     }
+    HttpRequest* req = readHttpReq(&buffer);
+    printf("Request parsed\n");
+    HttpResponse* resp = processRequest(req);
+    printf("Request processed\n");
+    char* rawResp = compileHttpResp(resp);
+    printf("Response compiled\n");
+    printf("Response: %s\n", rawResp);
+    send(clientFd, rawResp, strlen(rawResp), 0);
+    printf("Response sent\n");
+    destroyHttpReq(req);
+    destroyHttpResp(resp);
+    free(rawResp);
+    close(clientFd);
+}
+
+void setupHandlers() {
 }
 
 int main() {
     pid_t child_pid;
 
     int serverFd = createListenSocket();
+
+    initReqHandlers();
+    setupHandlers();
 
     // Listen for incoming connections
     if (listen(serverFd, 100)!=0) {
