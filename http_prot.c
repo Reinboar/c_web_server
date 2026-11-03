@@ -21,6 +21,8 @@ int destroyHttpReq(HttpRequest* req) {
         free(req->httpVersion);
     if (req->headers.host != NULL)
         free(req->headers.host);
+    if (req->headers.authorization != NULL)
+        free(req->headers.authorization);
     free(req);
     return 0;
 }
@@ -110,6 +112,7 @@ int getHeaders(HttpRequest* req, char** buffer) {
     while (**buffer != '\0') {
         int len = sliceStr(*buffer, ':', &result) + 1; // Get name of Http header
         *buffer += len; // skip length of header name and the trailing colon
+        printf("Header: %s\n", result);
         if (strcmp(result, "Host") == 0) {
             free(result);
             int spaceLen = skipStrWhile(*buffer, ' '); // skip spaces following colon of current header

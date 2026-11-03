@@ -5,6 +5,7 @@
 
 typedef struct HttpRequestHeaders {
     char* host;
+    char* authorization;
 } HttpRequestHeaders;
 
 typedef struct HttpRequest {
@@ -14,6 +15,8 @@ typedef struct HttpRequest {
     HttpRequestHeaders headers;
     char* body;
 } HttpRequest;
+
+typedef 
 
 HttpRequest* createHttpReq();
 int destroyHttpReq(HttpRequest* req);
