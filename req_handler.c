@@ -70,13 +70,23 @@ int sendResp(int fd, int status, const char* msg, int len, char* body) {
 int processRequest(HttpRequest* req, int fd) {
     if (strcmp(req->method, "GET") == 0) {
         int contentLength = getFileSize(req->url);
-        if (contentLength < 0) {
-            sendResp(fd, 404, "Not Found", 0, NULL);
+        char* bodyContent;
+        if (contentLength < 0) { // if requested file does not exist
+            contentLength = getFileSize("/404.html");
+            if (contentLength < 0) { // if custom 404 document does not exist
+                sendResp(fd, 404, "Not Found", 0, NULL);
+            } else { // if custom 404 document does exist
+                bodyContent = calloc(1, contentLength);
+                readFileContent("/404.html", bodyContent);
+                sendResp(fd, 404, "Not Found", contentLength, bodyContent);
+                free(bodyContent);
+            }
             return 0;
         }
-        char* bodyContent = calloc(1, contentLength);
+        bodyContent = calloc(1, contentLength);
         readFileContent(req->url, bodyContent);
         sendResp(fd, 200, "OK", contentLength, bodyContent);
+        free(bodyContent);
         return 0;
     } else if (strcmp(req->method, "POST") == 0) {
         sendResp(fd, 200, "OK", strlen(req->body), req->body);
