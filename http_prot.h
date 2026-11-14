@@ -1,7 +1,6 @@
 #ifndef HTTP_PROT_H
 #define HTTP_PROT_H
 
-#include <string.h>
 #include <stdbool.h>
 
 typedef struct HttpRequestHeaders {
