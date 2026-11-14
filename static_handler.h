@@ -65,8 +65,8 @@ bool staticFileHandlerFunc(HttpRequest* req, HttpResponse* resp, HashTable* ht) 
     if (fileSize < 0) {
         resp->statusCode = 404;
         resp->headers.contentType = "text/html";
-        const char* notFoundMsg = "<h1>File Not Found</h1>";
-        resp->body = calloc(1,strlen(notFoundMsg));
+        const char* notFoundMsg = "<h1>404 - File Not Found</h1>";
+        resp->body = calloc(1, strlen(notFoundMsg));
         strcpy(resp->body, notFoundMsg);
         return false;
     } else {
