@@ -80,6 +80,8 @@ bool destroyHttpReq(HttpRequest* req) {
         free(req->headers.host);
     if (req->headers.authorization != NULL)
         free(req->headers.authorization);
+    if (req->ip != NULL)
+        free(req->ip);
     free(req);
     return true;
 }

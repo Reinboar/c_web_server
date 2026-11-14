@@ -14,6 +14,7 @@ typedef struct HttpRequest {
     char* httpVersion;
     HttpRequestHeaders headers;
     char* body;
+    char* ip;
 } HttpRequest;
 
 typedef struct HttpResponseHeaders {
@@ -28,7 +29,6 @@ typedef struct HttpResponse {
     const char* statusMsg;
     HttpResponseHeaders headers;
     char* body;
-
 } HttpResponse;
 
 // Allocates a new HttpResponse structure
