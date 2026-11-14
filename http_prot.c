@@ -3,14 +3,69 @@
 
 #include "http_prot.h"
 
-HttpRequest* createHttpReq() {
+#define RAW_RESPONSE_MAX_SIZE 4*1024*1024 // 4 Megabytes
+
+HttpResponse* newHttpResp() {
+    HttpResponse* resp = calloc(1, sizeof(HttpResponse));
+    return resp;
+}
+
+bool destroyHttpResp(HttpResponse* resp) {
+    if (resp == NULL)
+        return false;
+    if (resp->body != NULL)
+        free(resp->body);
+    free(resp);
+    return true;
+}
+
+const char* statusCodeToMsg(int code) {
+    switch(code) {
+        case 200:
+        return "OK";
+        case 400:
+        return "Bad Request";
+        case 401:
+        return "Unauthorized";
+        case 403:
+        return "Forbidden";
+        case 404:
+        return "Not Found";
+        case 405:
+        return "Method Not Allowed";
+        case 500:
+        return "Internal Server Error";
+        default:
+        return "Unknown Status Code";
+    }
+}
+
+char* compileHttpResp(HttpResponse* resp) {
+    char* rawResp = calloc(1, RAW_RESPONSE_MAX_SIZE+1);
+    size_t bodySize = strlen(resp->body);
+
+    // Write HTTP response as a raw string, only include WWW-Authenticate header if it is provided
+    if (resp->headers.wwwAuthenticate == NULL) {
+        snprintf(rawResp, RAW_RESPONSE_MAX_SIZE, "HTTP/1.1 %d %s\r\nContent-Type: %s\r\nContent-Length: %d\r\nConnection: close\r\n\r\n%s",\
+            resp->statusCode, statusCodeToMsg(resp->statusCode), resp->headers.contentType, bodySize, resp->body);
+    } else {
+        snprintf(rawResp, RAW_RESPONSE_MAX_SIZE, "HTTP/1.1 %d %s\r\nContent-Type: %s\r\nContent-Length: %d\r\nConnection: close\r\nWWW-Authenticate: %s\r\n\r\n%s",\
+            resp->statusCode, statusCodeToMsg(resp->statusCode), resp->headers.contentType, bodySize, resp->headers.wwwAuthenticate, resp->body);
+    }
+
+    // ensure the raw response is properly terminated
+    rawResp[RAW_RESPONSE_MAX_SIZE] = 0;
+    return rawResp;
+}
+
+HttpRequest* newHttpReq() {
     HttpRequest* req = malloc(sizeof(HttpRequest));
     return req;
 }
 
-int destroyHttpReq(HttpRequest* req) {
+bool destroyHttpReq(HttpRequest* req) {
     if (req == NULL)
-        return -1;
+        return false;
     if (req->method != NULL)
         free(req->method);
     if (req->url != NULL)
@@ -24,7 +79,7 @@ int destroyHttpReq(HttpRequest* req) {
     if (req->headers.authorization != NULL)
         free(req->headers.authorization);
     free(req);
-    return 0;
+    return true;
 }
 
 // Creates a new string copied from the given string until the 1-character delimiter is encountered
@@ -144,7 +199,7 @@ int getBody(HttpRequest* req, char** buffer) {
 }
 
 HttpRequest* readHttpReq(char** buffer) {
-    HttpRequest* req = createHttpReq();
+    HttpRequest* req = newHttpReq();
     getMethod(req, buffer);
     printf("Method: %s\n", req->method);
     getUrl(req, buffer);
