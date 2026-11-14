@@ -9,7 +9,11 @@
 #include "http_prot.h"
 #include "req_handler.h"
 
-#define WEB_DIR "./web"
+char* webDir = "./web";
+
+inline void setWebDir(char* newDir) {
+    webDir = newDir;
+}
 
 char* buildFullPath(const char* basePath, const char* filename) {
     int pathLen = strlen(filename) + strlen(basePath);
@@ -21,7 +25,7 @@ char* buildFullPath(const char* basePath, const char* filename) {
 }
 
 int readFileContent(char* filename, char* buffer) {
-    char* fullPath = buildFullPath(WEB_DIR, filename);
+    char* fullPath = buildFullPath(webDir, filename);
     char* rdBuffer = calloc(1, 100);
     bzero(rdBuffer, 100);
     FILE* inFile = fopen(fullPath, "r");
@@ -36,7 +40,7 @@ int readFileContent(char* filename, char* buffer) {
 }
 
 int getFileSize(char* filename) {
-    char* fullPath = buildFullPath(WEB_DIR, filename);
+    char* fullPath = buildFullPath(webDir, filename);
     FILE* inFile = fopen(fullPath, "r");
     if (inFile == NULL) {
         printf("File not found: %s\n", fullPath);
