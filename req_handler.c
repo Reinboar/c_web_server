@@ -13,7 +13,7 @@ ReqHandler* tail = NULL;
 // The default request handler function does not modify the request or response
 // it simply returns true to signal that the request should continue to be processed,
 // if there are any remaining request handlers.
-bool defaultReqHandler(HttpRequest* req, HttpResponse* resp) {
+bool defaultReqHandler(HttpRequest* req, HttpResponse* resp, HashTable* ht) {
     resp->statusCode = 200;
     const char* defaultMsg = "<h1>IT WORKS</h1>";
     resp->body = calloc(1, strlen(defaultMsg));
@@ -69,9 +69,10 @@ bool insertReqHandler(char* name, ReqHandler* reqH) {
 HttpResponse* processRequest(HttpRequest* req) {
     HttpResponse* resp = newHttpResp();
     ReqHandler* curH = root;
+    HashTable* ht = createHashTable(50);
     while (curH != NULL) {
         printf("Request Handler: %s\n", curH->name);
-        if (!curH->func(req, resp)) {
+        if (!curH->func(req, resp, ht)) {
             printf("Stopping request processing early\n");
             return resp;
         }

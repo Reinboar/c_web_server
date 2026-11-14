@@ -60,7 +60,7 @@ int getFileSize(char* filename) {
     return fileSize;
 }
 
-bool staticFileHandlerFunc(HttpRequest* req, HttpResponse* resp) {
+bool staticFileHandlerFunc(HttpRequest* req, HttpResponse* resp, HashTable* ht) {
     int fileSize = getFileSize(req->url);
     if (fileSize < 0) {
         resp->statusCode = 404;
@@ -75,7 +75,7 @@ bool staticFileHandlerFunc(HttpRequest* req, HttpResponse* resp) {
         resp->statusCode = 200;
         resp->headers.contentType = "text/html";
         resp->body = fileContent;
-        return false;
+        return true;
     }
 }
 

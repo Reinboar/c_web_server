@@ -4,9 +4,10 @@
 #include <stdbool.h>
 
 #include "http_prot.h"
+#include "hash_table.h"
 
 // function signature for the request handlers
-typedef bool (*ReqHandlerFun)(HttpRequest*, HttpResponse*);
+typedef bool (*ReqHandlerFun)(HttpRequest*, HttpResponse*, HashTable*);
 
 typedef struct ReqHandler {
     ReqHandlerFun func;
