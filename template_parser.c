@@ -6,7 +6,6 @@
 #include "string_util.h"
 
 char* extractVarName(char* src) {
-    printf("Extracting variable\n");
     unsigned int srcLen = strlen(src);
     for (int i = 0; i < srcLen; i++) {
         char c = src[i];
@@ -14,7 +13,6 @@ char* extractVarName(char* src) {
             if (i < srcLen && src[i+1] == '}') {
                 char* result = calloc(1, i + 1);
                 memcpy(result, src, i);
-                printf("Var name: '%s'\n", result);
                 return result;
             }
         }
