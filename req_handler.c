@@ -70,6 +70,7 @@ HttpResponse* processRequest(HttpRequest* req) {
     HttpResponse* resp = newHttpResp();
     ReqHandler* curH = root;
     HashTable* ht = createHashTable(50);
+    insertElement(ht, "ip", req->ip);
     while (curH != NULL) {
         printf("Request Handler: %s\n", curH->name);
         if (!curH->func(req, resp, ht)) {
