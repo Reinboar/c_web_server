@@ -4,6 +4,7 @@
 
 #include "template_parser.h"
 #include "string_util.h"
+#include "static_handler.h"
 
 char* extractVarName(char* src) {
     unsigned int srcLen = strlen(src);
@@ -20,6 +21,16 @@ char* extractVarName(char* src) {
     return NULL;
 }
 
+char* insertTemplateValue(char* str, unsigned int strLen, unsigned int nameLen, int start, char* val) {
+    if (!val)
+        return NULL;
+    char* resultStr = calloc(1, strLen - 4 - nameLen + strlen(val) + 1);
+    strncat(resultStr, str, start);
+    strcat(resultStr, val);
+    strcat(resultStr, &(str[start+4+nameLen]));
+    return resultStr;
+}
+
 char* renderTemplate(char* src, HashTable* ht) {
     unsigned int srcLen = strlen(src);
     for (int i = 0; i < srcLen; i++) {
@@ -32,12 +43,17 @@ char* renderTemplate(char* src, HashTable* ht) {
                 char* varValue = getElement(ht, varName);
                 if (!varValue)
                     return NULL;
-                char* resultStr = calloc(1, srcLen - 4 - strlen(varName) + strlen(varValue) + 1);
-                strncat(resultStr, src, i);
-                strcat(resultStr, varValue);
-                strcat(resultStr, &(src[i+4+strlen(varName)]));
-                char* actualStr = renderTemplate(resultStr, ht);
-                return actualStr;
+                return renderTemplate(insertTemplateValue(src, srcLen, strlen(varName), i, varValue), ht);
+            } else if (i < srcLen && src[i+1] == '#') {
+                char* fileName = extractVarName(&(src[i+2]));
+                if (!fileName)
+                    return NULL;
+                int fileSize = getFileSize(fileName);
+                if (fileSize < 0)
+                    return NULL;
+                char* content = calloc(1, fileSize+1);
+                readFileContent(fileName, content);
+                return renderTemplate(insertTemplateValue(src, srcLen, strlen(fileName), i, content), ht);
             }
         }
     }
