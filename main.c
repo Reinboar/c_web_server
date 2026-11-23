@@ -10,9 +10,11 @@
 
 #include "http_prot.h"
 #include "req_handler.h"
+#include "string_util.h"
 
 // Request Handlers
 #include "static_handler.h"
+#include "template_parser.h"
 
 #define LISTEN_PORT 8080
 #define CLIENT_BUFFER_SIZE 1024*1024*2 // 2MB per client buffer
@@ -43,7 +45,7 @@ int acceptClientConnection(int serverFd, struct sockaddr_in* ca) {
     return accept(serverFd,(void*)ca, &address_size);
 }
 
-int clientSocketProcess(int clientFd) {
+int clientSocketProcess(int clientFd, char* ip) {
     char* buffer = malloc(CLIENT_BUFFER_SIZE); // input buffer
     int inSize; // size of the received message
 
@@ -54,6 +56,7 @@ int clientSocketProcess(int clientFd) {
         return 0; // kill current process
     }
     HttpRequest* req = readHttpReq(&buffer);
+    req->ip = ip;
     printf("Request parsed\n");
     HttpResponse* resp = processRequest(req);
     printf("Request processed\n");
@@ -70,6 +73,7 @@ int clientSocketProcess(int clientFd) {
 
 void setupHandlers() {
     appendReqHandler(staticFileHandler());
+    appendReqHandler(templateHandler());
 }
 
 int main() {
@@ -106,7 +110,7 @@ int main() {
 
         // Fork a process to handle data from the client connection
         if (child_pid = fork() == 0) {
-            clientSocketProcess(clientFd);
+            clientSocketProcess(clientFd, copyString(inet_ntoa(ca.sin_addr)));
             return 0;
         }
     }

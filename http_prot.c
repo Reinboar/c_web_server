@@ -1,7 +1,9 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "http_prot.h"
+#include "string_util.h"
 
 #define RAW_RESPONSE_MAX_SIZE 4*1024*1024 // 4 Megabytes
 
@@ -78,57 +80,10 @@ bool destroyHttpReq(HttpRequest* req) {
         free(req->headers.host);
     if (req->headers.authorization != NULL)
         free(req->headers.authorization);
+    if (req->ip != NULL)
+        free(req->ip);
     free(req);
     return true;
-}
-
-// Creates a new string copied from the given string until the 1-character delimiter is encountered
-int sliceStr(char* str, char delim, char** result) {
-    int len = 0;
-    char* curPos = str;
-    while (*curPos != delim) {
-        if (*curPos == '\0')
-            break;
-        
-        len++;
-        curPos++;
-    }
-
-    *result = malloc(len+1);
-    memcpy(*result, str, len);
-    (*result)[len] = 0; // properly append zero terminator to new string
-    return len;
-}
-
-// Same as sliceStr except the delimiter is always a newline, which is 2 characters in HTTP requests
-int sliceStrNewline(char* str, char** result) {
-    int len = 0;
-    char* curPos = str;
-    while (*curPos != '\r' && *curPos != '\n') {
-        if (*curPos == '\0')
-            break;
-        
-        len++;
-        curPos++;
-    }
-
-    *result = malloc(len+1);
-    memcpy(*result, str, len);
-    (*result)[len] = 0; // properly append zero terminator to new string
-    return len;
-}
-
-int skipStrWhile(char* str, char skip) {
-    int len = 0;
-    char* curPos = str;
-    while (*curPos == skip) {
-        if (*curPos == '\0')
-            break;
-        len++;
-        curPos++;
-    }
-
-    return len;
 }
 
 int getMethod(HttpRequest* req, char** buffer) {
