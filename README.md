@@ -20,4 +20,5 @@ Execute the make script.
 `$ ./make.sh`
 
 Run the server.
+
 `$ ./server`
