@@ -15,6 +15,7 @@
 // Request Handlers
 #include "static_handler.h"
 #include "template_parser.h"
+#include "access_handler.h"
 
 #define LISTEN_PORT 8080
 #define CLIENT_BUFFER_SIZE 1024*1024*2 // 2MB per client buffer
@@ -72,6 +73,7 @@ int clientSocketProcess(int clientFd, char* ip) {
 }
 
 void setupHandlers() {
+    appendReqHandler(accessHandler());
     appendReqHandler(staticFileHandler());
     appendReqHandler(templateHandler());
 }
