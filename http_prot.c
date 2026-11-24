@@ -130,6 +130,13 @@ int getHeaders(HttpRequest* req, char** buffer) {
             int valLen = sliceStrNewline(*buffer, &result) + 2;
             req->headers.host = result;
             *buffer += valLen;
+        } else if (strcmp(result, "Authorization") == 0) {
+            free(result);
+            int spaceLen = skipStrWhile(*buffer, ' '); // skip spaces following colon of current header
+            *buffer += spaceLen;
+            int valLen = sliceStrNewline(*buffer, &result) + 2;
+            req->headers.authorization = result;
+            *buffer += valLen;
         } else {
             free(result);
             int headerLen = sliceStrNewline(*buffer, &result) + 2;
