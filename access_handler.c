@@ -127,6 +127,7 @@ bool retrieveUserSalt(char* name, char** salt) {
     if (actualBytes >= finalLen)
         return false; // return false if the SQL string ended up being truncated during formatting
     int sqlResult = sqlite3_exec(accessDb, sqlFinal, retrieveUserSaltCallback, salt, NULL);
+    free(sqlFinal);
     if (sqlResult != SQLITE_OK)
         return false;
     return true;
@@ -137,23 +138,33 @@ int validateCredentialsCallback(void* userValidated, int numCols, char** vals, c
     return 0;
 }
 
-bool validateCredentials(char* name, char* pass, bool* userValidated) {
-    // Get salt from database and calculate the SHA1 hash of the given password
-    char* salt = NULL;
-    if (!retrieveUserSalt(name, &salt))
-        return false;
-    printf("Successfully retrieved salt\n");
-    printf("User Salt: '%s'\n", salt);
+char* hashPayload(const char* pass, const char* salt) {
     size_t finalPayloadLen = strlen(pass) + strlen(salt);
     char* finalPayload = calloc(1, finalPayloadLen + 1);
     unsigned char* rawHash = calloc(1, 20); // SHA1 hashes are always 20 characters long
-    char* finalHash = calloc(1, 41);
+    char* finalHash = calloc(1, 41); // rawHash converted from array of bytes to string representing hex digits
     strncat(finalPayload, pass, strlen(pass));
     strncat(finalPayload, salt, strlen(salt));
     SHA1(finalPayload, finalPayloadLen, rawHash); // hash the concatenation of pass and salt
     for (int i=0; i < 20; i++) { // convert all 20 bytes of rawHash to 40 bytes of ASCII
         sprintf(finalHash + i * 2,"%02x", rawHash[i]);
     }
+    free(rawHash);
+    free(finalPayload);
+    return finalHash;
+}
+
+bool validateCredentials(char* name, char* pass, bool* userValidated) {
+    // Get salt from database and calculate the SHA1 hash of the given password
+    char* salt = NULL;
+    if (!retrieveUserSalt(name, &salt))
+        return false;
+    if (salt == NULL) { // If no salt is found, do not validate the user
+        *userValidated = false;
+        return true;
+    }
+
+    char* finalHash = hashPayload(pass, salt);
 
     // Create SQL statement and search for user with given name and password
     const char* sqlFmtStr = "SELECT * FROM users WHERE name = \"%s\" AND hash = \"%s\" LIMIT 1;";
@@ -163,6 +174,8 @@ bool validateCredentials(char* name, char* pass, bool* userValidated) {
     if (actualBytes >= finalLen)
         return false; // return false if the SQL string ended up being truncated during formatting
     int sqlResult = sqlite3_exec(accessDb, sqlFinal, validateCredentialsCallback, userValidated, NULL);
+    free(sqlFinal);
+    free(finalHash);
     printf("SQL ERROR: '%s'\n", sqlite3_errmsg(accessDb));
     if (sqlResult != SQLITE_OK)
         return false;
