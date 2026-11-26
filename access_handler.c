@@ -35,7 +35,7 @@ uint8_t* decodeBase64(const char* in, size_t in_len, size_t* out_len) {
     if (in[in_len - 2] == '=') pad++;
 
     size_t cap = (in_len / 4) * 3 - pad;
-    uint8_t *out = malloc(cap ? cap : 1);
+    uint8_t *out = calloc(1, cap ? cap + 1 : 1);
     if (!out) return NULL;
 
     size_t i, j = 0;
