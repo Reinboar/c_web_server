@@ -14,7 +14,7 @@ ReqHandler* tail = NULL;
 // it simply returns true to signal that the request should continue to be processed,
 // if there are any remaining request handlers.
 HandlerResult defaultReqHandler(HttpRequest* req, HttpResponse* resp, HashTable* ht) {
-    return true;
+    return REQ_CONTINUE;
 }
 
 bool initReqHandlers() {
