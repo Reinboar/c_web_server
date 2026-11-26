@@ -13,7 +13,7 @@ ReqHandler* tail = NULL;
 // The default request handler function does not modify the request or response
 // it simply returns true to signal that the request should continue to be processed,
 // if there are any remaining request handlers.
-bool defaultReqHandler(HttpRequest* req, HttpResponse* resp, HashTable* ht) {
+HandlerResult defaultReqHandler(HttpRequest* req, HttpResponse* resp, HashTable* ht) {
     return true;
 }
 
@@ -60,8 +60,6 @@ bool insertReqHandler(char* name, ReqHandler* reqH) {
     }
     return false;
 }
-
-
 
 HttpResponse* processRequest(HttpRequest* req) {
     HttpResponse* resp = newHttpResp();
