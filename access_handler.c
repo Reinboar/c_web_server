@@ -79,7 +79,6 @@ bool checkPageRestricted(char* url, bool* result) {
     size_t finalLen = strlen(sqlFmtStr) + strlen(url) + 1;
     char* sqlFinal = calloc(1, finalLen);
     int actualBytes = snprintf(sqlFinal, finalLen, sqlFmtStr, url);
-    printf("SQL Statement: %s\n", sqlFinal);
     if (actualBytes >= finalLen)
         return false; // return false if the SQL string ended up being truncated during formatting
     int sqlResult = sqlite3_exec(accessDb, sqlFinal, checkPageRestrictedCallback, result, NULL);
@@ -89,7 +88,6 @@ bool checkPageRestricted(char* url, bool* result) {
 }
 
 bool decodeCredentials(HttpRequest* req, char** user, char** pass) {
-    printf("Decoding credentials...\n");
     if (!req->headers.authorization)
         return false;
     if (strncmp(req->headers.authorization, "Basic ", 6) != 0) // check that the authorization header begins properly
@@ -98,26 +96,19 @@ bool decodeCredentials(HttpRequest* req, char** user, char** pass) {
     size_t encodedCredsLen = strlen(req->headers.authorization) - 6; // calculate the length of the buffer for credentials minus the "Basic " portion
     char* encodedCreds = calloc(1, encodedCredsLen); // allocate memory for credentials
     strncpy(encodedCreds, &(req->headers.authorization[6]), encodedCredsLen); // copy the credentials from the header to the buffer
-    printf("Authorization Header: '%s'\n", req->headers.authorization);
-    printf("Encoded Credentials: '%s' Length: %d\n", encodedCreds, encodedCredsLen);
     size_t decodedCredsLen = 0;
     char* decodedCreds = decodeBase64(encodedCreds, encodedCredsLen, &decodedCredsLen); // decode the credentials and store in a new buffer
     if (decodedCreds == NULL)
         return false; // indicate error if the credentials could not be decoded
-    printf("Decoded Credentials: '%s' Length: %d\n", decodedCreds, decodedCredsLen);
 
     char* passPtr = strchr(decodedCreds, ':');
     passPtr++;
-    printf("Creds Pass: '%s'\n", passPtr);
     size_t passPtrLen = strlen(passPtr);
     *pass = calloc(1, passPtrLen+1);
-    strncpy(*pass, passPtr, passPtrLen-1);
-    printf("True Pass: '%s' Length: %d\n", *pass, strlen(*pass));
+    strncpy(*pass, passPtr, passPtrLen);
     size_t userLen = passPtr - decodedCreds - 1;
-    printf("True User Length: %d\n", userLen);
     *user = calloc(1, userLen + 1);
     strncpy(*user, decodedCreds, userLen);
-    printf("USER: '%s' PASS: '%s'\n", *user, *pass);
     return true;
 }
 
@@ -133,7 +124,6 @@ bool retrieveUserSalt(char* name, char** salt) {
     size_t finalLen = strlen(sqlFmtStr) + strlen(name) + 1;
     char* sqlFinal = calloc(1, finalLen);
     int actualBytes = snprintf(sqlFinal, finalLen, sqlFmtStr, name);
-    printf("SQL Statement: %s\n", sqlFinal);
     if (actualBytes >= finalLen)
         return false; // return false if the SQL string ended up being truncated during formatting
     int sqlResult = sqlite3_exec(accessDb, sqlFinal, retrieveUserSaltCallback, salt, NULL);
@@ -160,9 +150,8 @@ bool validateCredentials(char* name, char* pass, bool* userValidated) {
     char* finalHash = calloc(1, 41);
     strncat(finalPayload, pass, strlen(pass));
     strncat(finalPayload, salt, strlen(salt));
-    printf("Payload: '%s'\n", finalPayload);
-    SHA1(finalPayload, finalPayloadLen, rawHash);
-    for (int i=0; i < 20; i++) {
+    SHA1(finalPayload, finalPayloadLen, rawHash); // hash the concatenation of pass and salt
+    for (int i=0; i < 20; i++) { // convert all 20 bytes of rawHash to 40 bytes of ASCII
         sprintf(finalHash + i * 2,"%02x", rawHash[i]);
     }
 
@@ -171,10 +160,8 @@ bool validateCredentials(char* name, char* pass, bool* userValidated) {
     size_t finalLen = strlen(sqlFmtStr) + strlen(name) + strlen(finalHash) + 1;
     char* sqlFinal = calloc(1, finalLen);
     int actualBytes = snprintf(sqlFinal, finalLen, sqlFmtStr, name, finalHash);
-    printf("SQL Statement: %s\n", sqlFinal);
     if (actualBytes >= finalLen)
         return false; // return false if the SQL string ended up being truncated during formatting
-    printf("Constructed SQL statement\n");
     int sqlResult = sqlite3_exec(accessDb, sqlFinal, validateCredentialsCallback, userValidated, NULL);
     printf("SQL ERROR: '%s'\n", sqlite3_errmsg(accessDb));
     if (sqlResult != SQLITE_OK)
