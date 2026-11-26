@@ -14,11 +14,6 @@ ReqHandler* tail = NULL;
 // it simply returns true to signal that the request should continue to be processed,
 // if there are any remaining request handlers.
 bool defaultReqHandler(HttpRequest* req, HttpResponse* resp, HashTable* ht) {
-    resp->statusCode = 200;
-    const char* defaultMsg = "<h1>IT WORKS</h1>";
-    resp->body = calloc(1, strlen(defaultMsg));
-    resp->body = strcpy(resp->body, defaultMsg);
-    resp->headers.contentType = "text/html";
     return true;
 }
 
