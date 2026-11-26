@@ -182,12 +182,12 @@ bool validateCredentials(char* name, char* pass, bool* userValidated) {
     return true;
 }
 
-bool accessHandlerFunc(HttpRequest* req, HttpResponse* resp, HashTable* ht) {
+HandlerResult accessHandlerFunc(HttpRequest* req, HttpResponse* resp, HashTable* ht) {
     bool pageRestricted = false;
     if (!checkPageRestricted(req->url, &pageRestricted)) { // if error is encountered while checking access controls
         resp->statusCode = 500;
         resp->body = copyString("<h1>500 - Internal Server Error - A</h1>");
-        return false;
+        return REQ_STOP;
     }
 
     char* user = NULL;
@@ -198,24 +198,24 @@ bool accessHandlerFunc(HttpRequest* req, HttpResponse* resp, HashTable* ht) {
             if (!validateCredentials(user, pass, &userValidated)) {
                 resp->statusCode = 500;
                 resp->body = copyString("<h1>500 - Error while validating credentials</h1>");
-                return false;
+                return REQ_STOP;
             }
             if (userValidated) {
-                return true;
+                return REQ_CONTINUE;
             } else {
                 resp->statusCode = 401;
                 resp->body = copyString("<h1>401 - Unauthenticated</h1>");
                 resp->headers.wwwAuthenticate = "Basic realm=Access Restricted Page";
-                return false;
+                return REQ_STOP;
             }
         } else {
             resp->statusCode = 401;
             resp->body = copyString("<h1>401 - Unauthenticated</h1>");
             resp->headers.wwwAuthenticate = "Basic realm=Access Restricted Page";
-            return false;
+            return REQ_STOP;
         }
     } else {
-        return true;
+        return REQ_CONTINUE;
     }
 }
 

@@ -60,15 +60,15 @@ char* renderTemplate(char* src, HashTable* ht) {
     return src;
 }
 
-bool templateHandlerFunc(HttpRequest* req, HttpResponse* resp, HashTable* ht) {
+HandlerResult templateHandlerFunc(HttpRequest* req, HttpResponse* resp, HashTable* ht) {
     char* renderStr = renderTemplate(resp->body, ht);
     if (!renderStr) {
         resp->statusCode = 500;
         resp->body = copyString("<h1>500 - Internal Server Error</h1>");
-        return false;
+        return REQ_STOP;
     }
     resp->body = renderStr;
-    return true;
+    return REQ_CONTINUE;
 }
 
 ReqHandler* templateHandler() {

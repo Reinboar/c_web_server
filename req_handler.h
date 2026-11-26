@@ -6,8 +6,14 @@
 #include "http_prot.h"
 #include "hash_table.h"
 
+typedef enum HandlerResult {
+    REQ_CONTINUE,
+    REQ_STOP,
+    REQ_RESTART
+} HandlerResult;
+
 // function signature for the request handlers
-typedef bool (*ReqHandlerFun)(HttpRequest*, HttpResponse*, HashTable*);
+typedef HandlerResult (*ReqHandlerFun)(HttpRequest*, HttpResponse*, HashTable*);
 
 typedef struct ReqHandler {
     ReqHandlerFun func;

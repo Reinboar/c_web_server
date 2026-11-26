@@ -61,6 +61,8 @@ bool insertReqHandler(char* name, ReqHandler* reqH) {
     return false;
 }
 
+
+
 HttpResponse* processRequest(HttpRequest* req) {
     HttpResponse* resp = newHttpResp();
     ReqHandler* curH = root;
@@ -68,9 +70,14 @@ HttpResponse* processRequest(HttpRequest* req) {
     insertElement(ht, "ip", req->ip);
     while (curH != NULL) {
         printf("Request Handler: %s\n", curH->name);
-        if (!curH->func(req, resp, ht)) {
+        HandlerResult res = curH->func(req, resp, ht);
+        if (res == REQ_STOP) {
             printf("Stopping request processing early\n");
             return resp;
+        } else if (res == REQ_RESTART) {
+            printf("Restarting request processing...\n");
+            curH = root;
+            continue;
         }
         curH = curH->next;
     }

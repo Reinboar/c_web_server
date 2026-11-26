@@ -67,7 +67,7 @@ int getFileSize(char* filename) {
     return fileSize;
 }
 
-bool staticFileHandlerFunc(HttpRequest* req, HttpResponse* resp, HashTable* ht) {
+HandlerResult staticFileHandlerFunc(HttpRequest* req, HttpResponse* resp, HashTable* ht) {
     int fileSize = getFileSize(req->url);
     if (fileSize < 0) {
         resp->statusCode = 404;
@@ -75,14 +75,14 @@ bool staticFileHandlerFunc(HttpRequest* req, HttpResponse* resp, HashTable* ht) 
         const char* notFoundMsg = "<h1>404 - File Not Found</h1>";
         resp->body = calloc(1, strlen(notFoundMsg));
         strcpy(resp->body, notFoundMsg);
-        return false;
+        return REQ_STOP;
     } else {
         char* fileContent = calloc(1, fileSize);
         readFileContent(req->url, fileContent);
         resp->statusCode = 200;
         resp->headers.contentType = "text/html";
         resp->body = fileContent;
-        return true;
+        return REQ_CONTINUE;
     }
 }
 
