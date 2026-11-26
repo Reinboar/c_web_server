@@ -192,12 +192,13 @@ bool accessHandlerFunc(HttpRequest* req, HttpResponse* resp, HashTable* ht) {
             } else {
                 resp->statusCode = 401;
                 resp->body = copyString("<h1>401 - Unauthenticated</h1>");
-                resp->headers.wwwAuthenticate = "Basic realm=site";
+                resp->headers.wwwAuthenticate = "Basic realm=Access Restricted Page";
+                return false;
             }
         } else {
             resp->statusCode = 401;
             resp->body = copyString("<h1>401 - Unauthenticated</h1>");
-            resp->headers.wwwAuthenticate = "Basic realm=site";
+            resp->headers.wwwAuthenticate = "Basic realm=Access Restricted Page";
             return false;
         }
     } else {
