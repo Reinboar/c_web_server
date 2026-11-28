@@ -16,6 +16,7 @@
 #include "static_handler.h"
 #include "template_parser.h"
 #include "access_handler.h"
+#include "route_handler.h"
 
 #define LISTEN_PORT 8080
 #define CLIENT_BUFFER_SIZE 1024*1024*2 // 2MB per client buffer
@@ -70,13 +71,20 @@ int clientSocketProcess(int clientFd, char* ip) {
     destroyHttpReq(req);
     destroyHttpResp(resp);
     free(rawResp);
-    close(clientFd);
+}
+
+HandlerResult homeRedirect(HttpRequest* req, HttpResponse* resp, HashTable* ht) {
+    req->url = copyString("/index.html");
+    return REQ_RESTART;
 }
 
 void setupHandlers() {
     appendReqHandler(accessHandler());
+    appendReqHandler(routeHandler());
     appendReqHandler(staticFileHandler());
     appendReqHandler(templateHandler());
+
+    addGetRoute("/", homeRedirect);
 }
 
 int main() {
