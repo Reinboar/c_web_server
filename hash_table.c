@@ -44,7 +44,7 @@ void printHashTable(HashTable* ht) {
     }
 }
 
-HashTableLink* createHashTableLink(const char* key, char* value) {
+HashTableLink* createHashTableLink(const char* key, void* value) {
     HashTableLink* htl = calloc(1,sizeof(HashTableLink));
     htl->key = key;
     htl->value = value;
@@ -80,7 +80,7 @@ HashTableLink* getLink(HashTable* ht, const char* key) {
 }
 
 // Returns NULL if an element with the given key does not exist
-char* getElement(HashTable* ht, const char* key) {
+void* getElement(HashTable* ht, const char* key) {
     if (!ht)
         return NULL;
     HashTableLink* link = getLink(ht, key);
@@ -92,7 +92,7 @@ char* getElement(HashTable* ht, const char* key) {
 // Inserts a new element into a hash table with the given key and value
 // Returns false if NULL is given as the hash table or if an element with
 //   given key already exists. Returns true otherwise
-bool insertElement(HashTable* ht, const char* key, char* value) {
+bool insertElement(HashTable* ht, const char* key, void* value) {
     if (!ht)
         return false;
     unsigned int bucketIndex = calcBucketIndex(ht, key);
@@ -112,12 +112,12 @@ bool insertElement(HashTable* ht, const char* key, char* value) {
 
 // Replaces the value of the given key with a new value
 // Returns the old value at the given key, NULL if the element does not exist
-char* replaceElement(HashTable* ht, const char* key, char* value) {
+void* replaceElement(HashTable* ht, const char* key, void* value) {
     if (!ht)
         return NULL;
     HashTableLink* link = getLink(ht, key);
     if (link) {
-        char* oldValue = link->value;
+        void* oldValue = link->value;
         link->value = value;
         return oldValue;
     } else {
@@ -128,7 +128,7 @@ char* replaceElement(HashTable* ht, const char* key, char* value) {
 
 // Deletes the element in the hash table at the given key
 // Returns the old value of the given key, returns NULL if the element does not exist
-char* deleteElement(HashTable* ht, const char* key) {
+void* deleteElement(HashTable* ht, const char* key) {
     if (!ht)
         return NULL;
     unsigned int bucketIndex = calcBucketIndex(ht, key);
@@ -136,7 +136,7 @@ char* deleteElement(HashTable* ht, const char* key) {
     HashTableLink* prevLink = NULL;
     while (curLink) {
         if (strcmp(curLink->key, key) == 0) {
-            char* oldValue = curLink->value;
+            void* oldValue = curLink->value;
             if (prevLink) { // Relink the previous and next links together if this is not the first link in the bucket
                 prevLink->next = curLink->next;
             } else { // Set the first link in the bucket to the next link, if curlink is the first link in the bucket

@@ -7,7 +7,7 @@
 // Linked list node contained in an individual hash table bucket
 typedef struct HashTableLink {
     const char* key;
-    char* value;
+    void* value;
     struct HashTableLink* next;
 } HashTableLink;
 
@@ -20,9 +20,9 @@ HashTable* createHashTable(size_t numBuckets);
 void destroyHashTable(HashTable* ht);
 void printHashTable(HashTable* ht);
 
-char* getElement(HashTable* ht, const char* key);
-bool insertElement(HashTable* ht, const char* key, char* value);
-char* replaceElement(HashTable* ht, const char* key, char* value);
-char* deleteElement(HashTable* ht, const char* key);
+void* getElement(HashTable* ht, const char* key);
+bool insertElement(HashTable* ht, const char* key, void* value);
+void* replaceElement(HashTable* ht, const char* key, void* value);
+void* deleteElement(HashTable* ht, const char* key);
 
 #endif
