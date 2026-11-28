@@ -31,24 +31,43 @@ char* buildFullPath(const char* basePath, const char* filename) {
     return fullPath;
 }
 
-int readFileContent(char* filename, char* buffer) {
-    char* fullPath = buildFullPath(webDir, filename);
-    char* rdBuffer = calloc(1, 100);
-    bzero(rdBuffer, 100);
-    FILE* inFile = fopen(fullPath, "r");
-    free(fullPath);
-    while (feof(inFile) == 0) {
-        int bytesNum = fread(rdBuffer, 1, 100, inFile);
-        strncat(buffer, rdBuffer, bytesNum);
+const char* getMimeType(char* filename) {
+    char* fileExt = strchr(filename, '.')+1;
+    if (strcmp(fileExt, "html") == 0) {
+        return "text/html";
+    } else if (strcmp(fileExt, "ico") == 0) {
+        return "image/x-icon";
+    } else if (strcmp(fileExt, "jpg") == 0) {
+        return "image/jpg";
+    } else if (strcmp(fileExt, "png") == 0) {
+        return "image/png";
+    } else {
+        return "";
     }
-    free(rdBuffer);
+}
+
+int readFileContentRaw(char* filename, size_t size, char* buffer) {
+    char* fullPath = buildFullPath(webDir, filename);
+    FILE* inFile = fopen(fullPath, "rb");
+    if (inFile == NULL) {
+        free(fullPath);
+        return -1;
+    }
+    free(fullPath);
+    fread(buffer, 1, size, inFile);
     fclose(inFile);
     return 0;
 }
 
+bool readFileContent(char* filename, size_t size, char* buffer) {
+    int result = readFileContentRaw(filename, size, buffer);
+    return (result == 0);
+}
+
+
 int getFileSize(char* filename) {
     char* fullPath = buildFullPath(webDir, filename);
-    FILE* inFile = fopen(fullPath, "r");
+    FILE* inFile = fopen(fullPath, "rb");
     if (inFile == NULL) {
         printf("File not found: %s\n", fullPath);
         free(fullPath);
@@ -78,10 +97,16 @@ HandlerResult staticFileHandlerFunc(HttpRequest* req, HttpResponse* resp, HashTa
         return REQ_STOP;
     } else {
         char* fileContent = calloc(1, fileSize);
-        readFileContent(req->url, fileContent);
+        readFileContent(req->url, fileSize, fileContent);
         resp->statusCode = 200;
-        resp->headers.contentType = "text/html";
+        if (resp->headers.contentType == NULL)
+            resp->headers.contentType = getMimeType(req->url);
         resp->body = fileContent;
+        if (strcmp(resp->headers.contentType, "text/html") != 0) {
+            resp->binaryBodySize = fileSize;
+            return REQ_STOP;
+        }
+        resp->binaryBodySize = -1;
         return REQ_CONTINUE;
     }
 }

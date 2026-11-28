@@ -14,7 +14,7 @@ char* buildFullPath(const char* basePath, const char* filename);
 
 // Read the contents of filename and write them into the given buffer
 // Note: buffer must be large enough to contain the file's contents before calling
-int readFileContent(char* filename, char* buffer);
+bool readFileContent(char* filename, size_t size, char* buffer);
 
 // Get the size of the file named by filename
 int getFileSize(char* filename);

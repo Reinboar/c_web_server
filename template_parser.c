@@ -52,7 +52,7 @@ char* renderTemplate(char* src, HashTable* ht) {
                 if (fileSize < 0)
                     return NULL;
                 char* content = calloc(1, fileSize+1);
-                readFileContent(fileName, content);
+                readFileContent(fileName, fileSize, content);
                 return renderTemplate(insertTemplateValue(src, srcLen, strlen(fileName), i, content), ht);
             }
         }

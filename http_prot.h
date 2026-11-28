@@ -29,6 +29,7 @@ typedef struct HttpResponse {
     const char* statusMsg;
     HttpResponseHeaders headers;
     char* body;
+    long binaryBodySize;
 } HttpResponse;
 
 // Allocates a new HttpResponse structure

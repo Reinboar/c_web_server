@@ -63,9 +63,10 @@ int clientSocketProcess(int clientFd, char* ip) {
     printf("Request processed\n");
     char* rawResp = compileHttpResp(resp);
     printf("Response compiled\n");
-    printf("Response: %s\n", rawResp);
-    send(clientFd, rawResp, strlen(rawResp), 0);
+    // printf("Response: %s\n", rawResp);
+    send(clientFd, rawResp, resp->binaryBodySize, 0);
     printf("Response sent\n");
+    close(clientFd);
     destroyHttpReq(req);
     destroyHttpResp(resp);
     free(rawResp);

@@ -9,6 +9,7 @@
 
 HttpResponse* newHttpResp() {
     HttpResponse* resp = calloc(1, sizeof(HttpResponse));
+    resp->binaryBodySize = -1;
     return resp;
 }
 
@@ -44,16 +45,19 @@ const char* statusCodeToMsg(int code) {
 
 char* compileHttpResp(HttpResponse* resp) {
     char* rawResp = calloc(1, RAW_RESPONSE_MAX_SIZE+1);
-    size_t bodySize = strlen(resp->body);
+    long bodySize = resp->binaryBodySize == -1 ? strlen(resp->body) : resp->binaryBodySize;
+    long actualHeaderSize;
 
     // Write HTTP response as a raw string, only include WWW-Authenticate header if it is provided
     if (resp->headers.wwwAuthenticate == NULL) {
-        snprintf(rawResp, RAW_RESPONSE_MAX_SIZE, "HTTP/1.1 %d %s\r\nContent-Type: %s\r\nContent-Length: %d\r\nConnection: close\r\n\r\n%s",\
-            resp->statusCode, statusCodeToMsg(resp->statusCode), resp->headers.contentType, bodySize, resp->body);
+        actualHeaderSize = snprintf(rawResp, RAW_RESPONSE_MAX_SIZE, "HTTP/1.1 %d %s\r\nContent-Type: %s\r\nContent-Length: %d\r\nConnection: close\r\n\r\n",\
+            resp->statusCode, statusCodeToMsg(resp->statusCode), resp->headers.contentType, bodySize);
     } else {
-        snprintf(rawResp, RAW_RESPONSE_MAX_SIZE, "HTTP/1.1 %d %s\r\nContent-Type: %s\r\nContent-Length: %d\r\nConnection: close\r\nWWW-Authenticate: %s\r\n\r\n%s",\
-            resp->statusCode, statusCodeToMsg(resp->statusCode), resp->headers.contentType, bodySize, resp->headers.wwwAuthenticate, resp->body);
+        actualHeaderSize = snprintf(rawResp, RAW_RESPONSE_MAX_SIZE, "HTTP/1.1 %d %s\r\nContent-Type: %s\r\nContent-Length: %d\r\nConnection: close\r\nWWW-Authenticate: %s\r\n\r\n",\
+            resp->statusCode, statusCodeToMsg(resp->statusCode), resp->headers.contentType, bodySize, resp->headers.wwwAuthenticate);
     }
+    memcpy(&rawResp[actualHeaderSize], resp->body, bodySize);
+    resp->binaryBodySize = bodySize + actualHeaderSize;
 
     // ensure the raw response is properly terminated
     rawResp[RAW_RESPONSE_MAX_SIZE] = 0;
